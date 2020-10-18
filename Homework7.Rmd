@@ -1,0 +1,372 @@
+---
+title: "Chapter 7 - Inference for Numerical Data"
+author: ''
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
+    extra_dependencies:
+    - geometry
+    - multicol
+    - multirow
+    - xcolor
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Working backwards, Part II.** (5.24, p. 203) A 90% confidence interval for a population mean is (65, 77). The population distribution is approximately normal and the population standard deviation is unknown. This confidence interval is based on a simple random sample of 25 observations. Calculate the sample mean, the margin of error, and the sample standard deviation.
+
+
+**Answer**
+
+```{r}
+x1<-65
+x2<-77
+n<-25
+paste("Sample Mean is",(x2+x1)/2)
+paste("Margin of error is",ME<-(x2-x1)/2)
+
+df <- 25-1
+p <- 0.9
+p2tails <- p + (1-p)/2
+tval <- qt(p2tails, df)
+SE <- ME / tval
+sd <- SE * sqrt(n)
+paste("Sample standard deviation is",sd)
+```
+
+
+
+--------------------------------------------------------------------------------
+
+\clearpage
+
+**SAT scores.** (7.14, p. 261) SAT scores of students at an Ivy League college are distributed with a standard deviation of 250 points. Two statistics students, Raina and Luke, want to estimate the average SAT score of students at this college as part of a class project. They want their margin of error to be no more than 25 points.
+
+(a) Raina wants to use a 90% confidence interval. How large a sample should she collect?
+
+```{r}
+sd <- 250
+ME <- 25
+z <- qnorm(.95) 
+n <- ((z*sd)/ME)^2
+n
+```
+
+(b) Luke wants to use a 99% confidence interval. Without calculating the actual sample size, determine whether his sample should be larger or smaller than Raina's, and explain your reasoning.
+
+**Answer**
+
+Luke's sample should be larger since it will require a higher z number.
+
+(c) Calculate the minimum required sample size for Luke.
+
+
+```{r}
+z <- qnorm(.995)
+sd <- 250
+ME <- 25
+n <- ((z*sd)/ME)^ 2 
+n
+```
+
+
+
+--------------------------------------------------------------------------------
+
+\clearpage
+
+**High School and Beyond, Part I.** (7.20, p. 266) The National Center of Education Statistics conducted a survey of high school seniors, collecting test data on reading, writing, and several other subjects. Here we examine a simple random sample of 200 students from this survey. Side-by-side box plots of reading and writing scores as well as a histogram of the differences in scores are shown below.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.show='asis', out.width="50%", fig.height=3}
+library(openintro)
+data(hsb2)
+scores <- c(hsb2$read, hsb2$write)
+gp <- c(rep('read', nrow(hsb2)), rep('write', nrow(hsb2)))
+par(mar = c(3, 4, 0.5, 0.5), las = 1, mgp = c(2.8, 0.7, 0), 
+    cex.axis = 1.1, cex.lab = 1.1)
+openintro::dotPlot(scores, gp, vertical = TRUE, ylab = "scores", 
+                   at=1:2+0.13, col = COL[1,3], 
+                   xlim = c(0.5,2.5), ylim = c(20, 80), 
+                   axes = FALSE, cex.lab = 1.25, cex.axis = 1.25)
+axis(1, at = c(1,2), labels = c("read","write"), cex.lab = 1.25, cex.axis = 1.25)
+axis(2, at = seq(20, 80, 20), cex.axis = 1.25)
+boxplot(scores ~ gp, add = TRUE, axes = FALSE, col = NA)
+
+par(mar=c(3.3, 2, 0.5, 0.5), las = 1, mgp = c(2.1, 0.7, 0), 
+    cex.lab = 1.25, cex.axis = 1.25)
+histPlot(hsb2$read - hsb2$write, col = COL[1], 
+         xlab = "Differences in scores (read - write)", ylab = "")
+```
+
+(a) Is there a clear difference in the average reading and writing scores?
+
+**Answer**
+
+There does not seem to be much difference between the reading and writng scores.
+
+(b) Are the reading and writing scores of each student independent of each other?
+
+**Answer**
+
+The scores are not independent.
+
+(c) Create hypotheses appropriate for the following research question: is there an evident difference in the average scores of students in the reading and writing exam?
+
+**Answer**
+
+H0: Has no difference between the average reading and writing score.
+
+HA: There is difference between the average reading and writing score.
+
+(d) Check the conditions required to complete this test.
+
+**Answer**
+
+Our sample size is fairly large, we have independence, and the distribution of the differences appears roughly normal.
+
+(e) The average observed difference in scores is ${ \widehat { x }  }_{ read-write }=-0.545$, and the standard deviation of the differences is 8.887 points. Do these data provide convincing evidence of a difference between the average scores on the two exams?
+
+**Answer**
+
+```{r}
+n <- 200
+sd <- 8.887
+xdiff <- -.545
+sediff <- sd/(sqrt(n))
+t <- (xdiff-0)/sediff
+
+df <- n-1
+
+p <- pt(t, df = df)
+p
+
+
+```
+The p-value is not less than 0.05, therefore, there is not enough evidence of a difference in the reading and writing scores.
+
+
+(f) What type of error might we have made? Explain what the error means in the context of the application.
+
+**Answer**
+
+Type error I: Incorrectly reject the null hypothesis.
+Type error II: Incorrectly reject the alternative hypothesis.
+Could have possibly made a type II error by rejecting the alternative hypothesis.
+
+
+(g) Based on the results of this hypothesis test, would you expect a confidence interval for the average difference between the reading and writing scores to include 0? Explain your reasoning.
+
+**Answer**
+
+I would expect it to contain 0 because we are fairly certain that the difference between reading and math scores are 0.
+
+
+--------------------------------------------------------------------------------
+
+\clearpage
+
+**Fuel efficiency of manual and automatic cars, Part II.** (7.28, p. 276) The table provides summary statistics on highway fuel economy of cars manufactured in 2012. Use these statistics to calculate a 98\% confidence interval for the difference between average highway mileage of manual and automatic cars, and interpret this interval in the context of the data.
+
+\begin{tabular}{l c c }
+\hline
+        & \multicolumn{2}{c}{Hwy MPG} \\
+\hline
+            & Automatic     & Manual         \\
+Mean    & 22.92         & 27.88          \\
+SD      & 5.29          & 5.01           \\
+n       & 26            & 26 \\
+\hline
+& \\
+& \\
+\end{tabular}
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=3, fig.height=3}
+library(openintro)
+fuel_eff <- read.csv("https://github.com/jbryer/DATA606Fall2019/raw/master/course_data/fuel_eff.csv", stringsAsFactors = TRUE)
+man_rows <- which(fuel_eff$transmission == "M")
+aut_rows <- which(fuel_eff$transmission == "A")
+set.seed(3583)
+man_rows_samp <- sample(man_rows, 26)
+aut_rows_samp <- sample(aut_rows, 26)
+fuel_eff_samp <- fuel_eff[c(man_rows_samp,aut_rows_samp), ]
+fuel_eff_samp$transmission <- droplevels(fuel_eff_samp$transmission)
+levels(fuel_eff_samp$transmission) <- c("automatic", "manual")
+boxPlot(fuel_eff_samp$hwy_mpg, fact = fuel_eff_samp$transmission, ylim = c(10, 37), 
+        xlab = "Hwy MPG", axes = FALSE, xlim = c(0.5, 2.5))
+axis(1, at = c(1,2), labels = c("automatic","manual"))
+axis(2, at = c(15,25,35))
+```
+
+**Answer**
+
+```{r}
+n <- 26
+
+x_a <- 22.92
+s_a <- 5.29
+
+x_b <- 27.88
+s_b <- 5.01
+
+x_diff <- x_b - x_a
+s_diff <- sqrt(s_a^2/n+s_b^2/n)
+df <- min(n-1, n-1)
+t <- (x_diff-0)/(s_diff)
+
+
+me <- qt(0.99, df)*s_diff
+ci <- c(x_diff-me, x_diff+me)
+ci
+```
+
+
+
+
+
+--------------------------------------------------------------------------------
+
+\clearpage
+
+**Email outreach efforts.** (7.34, p. 284) A medical research group is recruiting people to complete short surveys about their medical history. For example, one survey asks for information on a person's family history in regards to cancer. Another survey asks about what topics were discussed during the person's last visit to a hospital. So far, as people sign up, they complete an average of just 4 surveys, and the standard deviation of the number of surveys is about 2.2. The research group wants to try a new interface that they think will encourage new enrollees to complete more surveys, where they will randomize each enrollee to either get the new interface or the current interface. How many new enrollees do they need for each interface to detect an effect size of 0.5 surveys per enrollee, if the desired power level is 80%?
+
+**Answer**
+
+```{r}
+x_bar <- 4
+s <- 2.2
+mu_diff <- 0.5
+
+se <- mu_diff/(qnorm(0.8)+qnorm(0.975))
+se
+
+n <- (s^2+s^2)/se^2
+ceiling(n)
+```
+
+
+
+
+--------------------------------------------------------------------------------
+
+\clearpage
+
+**Work hours and education.** The General Social Survey collects data on demographics, education, and work, among many other characteristics of US residents.47 Using ANOVA, we can consider educational attainment levels for all 1,172 respondents at once. Below are the distributions of hours worked by educational attainment and relevant summary statistics that will be helpful in carrying out this analysis.
+
+\begin{center}
+\begin{tabular}{l  r  r  r  r  r  r}
+                & \multicolumn{5}{c}{\textit{Educational attainment}} \\
+\cline{2-6}
+                & Less than HS  & HS    & Jr Coll   & Bachelor's & Graduate & Total \\
+\hline
+Mean            & 38.67         & 39.6  & 41.39     & 42.55     & 40.85     & 40.45 \\
+SD              & 15.81         & 14.97 & 18.1      & 13.62     & 15.51     & 15.17 \\
+n               & 121           & 546   & 97        & 253       & 155       & 1,172 \\
+\hline
+\end{tabular}
+\end{center}
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=3}
+library(openintro)
+library(xtable)
+if(!file.exists('gss2010.Rda')) {
+	download.file('https://github.com/jbryer/DATA606Fall2019/raw/master/course_data/gss2010.Rda',
+				  dest = 'gss2010.Rda', mode = "wb")
+}
+load("gss2010.Rda")
+gss <- gss2010
+gss_sub <- gss[which(!is.na(gss$hrs1) & !is.na(gss$degree)), ]
+gss_sub <- gss_sub[, which(names(gss_sub) == "degree" | names(gss_sub) == "hrs1")]
+levels(gss_sub$degree) <- c("Less than HS","HS","Jr Coll","Bachelor's","Graduate")
+par(mar = c(2,3.5,0.5,.5), mgp = c(2.3,0.7,0), las = 1)
+
+boxPlot(gss_sub$hrs1, fact = gss_sub$degree, 
+        col = COL[1,2], ylab = "Hours worked per week", xlim=c(0.6, 5.4))
+```
+
+(a) Write hypotheses for evaluating whether the average number of hours worked varies across the five groups.
+
+**Answer**
+
+H0: The difference of all averages is equal
+HA: At least one average is different
+
+(b) Check conditions and describe any assumptions you must make to proceed with the test.
+
+**Answer**
+
+The observations are independent and data within each group is nearly normal.
+
+(c) Below is part of the output associated with this test. Fill in the empty cells.
+
+**Answer**
+
+```{r}
+n <- 1172
+k <- 5
+dfG <- k-1
+dfR <- n-k
+totaldf <- dfG + dfR
+
+# Using P determine F Stat
+p <- .0682
+F <- qf(1-p, dfR, dfG)
+
+# Using MSR and F determine MSG
+MSG <- 501.54
+MSR <- MSG / F
+
+# Using MSR determine SSR
+SSG <- dfG * MSG  
+SSR <- 267382
+SST <- SSG + SSR
+
+ANOVA <- c("degree", "residuals", "Total")
+Df <- c(dfG, dfR, totaldf)
+Sum_Sq <- c(SSG, SSR, SST)
+Mean_Sq <- c(MSG, MSR, "")
+F_value <- c(F, "", "")
+P <- c(p, "", "")
+
+ANOVA_df <- data.frame(ANOVA, Df, Sum_Sq, Mean_Sq, F_value, P)
+ANOVA_df
+```
+
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{lrrrrr}
+  \hline
+            & Df    
+                    & Sum Sq        
+                            & Mean Sq       
+                                    & F-value      
+                                            & Pr($>$F) \\ 
+  \hline
+degree      & \fbox{\textcolor{white}{{\footnotesize XXXXX}}}       
+                    & \fbox{\textcolor{white}{{\footnotesize XXXXX}}}       
+                            & 501.54    
+                                    & \fbox{\textcolor{white}{{\footnotesize XXXXX}}}   
+                                            & 0.0682 \\ 
+Residuals   & \fbox{\textcolor{white}{{\footnotesize XXXXX}}} 
+                    & 267,382     
+                            & \fbox{\textcolor{white}{{\footnotesize  XXXXX}}}          
+                                    &       
+                                            &  \\ 
+   \hline
+Total       & \fbox{\textcolor{white}{{\footnotesize XXXXX}}} 
+                    &\fbox{\textcolor{white}{{\footnotesize XXXXX}}}
+\end{tabular}
+\end{center}
+
+(d) What is the conclusion of the test?
+
+**Answer**
+
+Since p>0.05 we conclude that there is no significant difference between the groups.
+
+
+
+
